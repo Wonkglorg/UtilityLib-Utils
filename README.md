@@ -1,4 +1,4 @@
-# UtilityLib - Config
+# UtilityLib - Utils
 
 ![alt text](https://github.com/Wonkglorg/Minecraft-UtilityLib/blob/master/Logo.png?raw=true)
 
@@ -13,7 +13,7 @@
 
 ## <a name="introduction"></a>Introduction
 
-Lightweight Config and Language manager library as a seperate module as part of the UtilityLib library
+Plugin Utils to make coding easier
 
 ## <a name="requirements"></a>Requirements
 
@@ -37,17 +37,20 @@ Adding the dependency
 ```yml
 <dependency>
      <groupId>com.github.Wonkglorg</groupId>
-     <artifactId>UtilityLib-Config</artifactId>
+     <artifactId>UtilityLib-Utils</artifactId>
      <version>version</version>
 </dependency>
 ```
 
 ## <a name="overview"></a>Overview
 
-* Config Manager
-  * Adds a singleton ConfigManger to assign and retrieve individual configs from by a programmer specified key.
-* Lang Manager 
-  * Adds a singleton LangManger to dynamically choose the correct lang file to retrieve a message from allows for player specific language depending on their client
+* Player Utils
+* Location Utils
+* Command Helper
+* Structure Creator
+* Time Converters
+* Cooldown Manager
+* Random Utils
 
 
 ## <a name="credits"></a>Credits
