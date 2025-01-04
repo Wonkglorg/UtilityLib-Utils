@@ -2,6 +2,7 @@ package com.wonkglorg.utilitylib.cooldown;
 
 
 import com.wonkglorg.utilitylib.converter.time.TimeBuilder;
+import com.wonkglorg.utilitylib.serializer.Base64Converter;
 import org.bukkit.entity.Player;
 
 import javax.annotation.concurrent.ThreadSafe;
