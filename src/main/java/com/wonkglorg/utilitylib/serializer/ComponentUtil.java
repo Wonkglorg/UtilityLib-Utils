@@ -16,7 +16,7 @@ public class ComponentUtil{
 	 * @param message The message to convert
 	 * @return The converted component
 	 */
-	public static Component deserialize(final String message) {
+	public static Component toComponent(final String message) {
 		return miniMessage().deserialize(message);
 	}
 	
@@ -26,7 +26,7 @@ public class ComponentUtil{
 	 * @param messages The messages to convert
 	 * @return The converted list of components
 	 */
-	public static List<Component> deserialize(final List<String> messages) {
+	public static List<Component> toComponent(final List<String> messages) {
 		return messages.stream().map(miniMessage()::deserialize).toList();
 	}
 	
@@ -36,7 +36,7 @@ public class ComponentUtil{
 	 * @param message The component to serialize
 	 * @return The serialized string
 	 */
-	public static String serialize(final Component message) {
+	public static String fromComponent(final Component message) {
 		return miniMessage().serialize(message);
 	}
 	
@@ -46,7 +46,7 @@ public class ComponentUtil{
 	 * @param messages The list of components to serialize
 	 * @return The list of serialized strings
 	 */
-	public static List<String> serialize(final List<Component> messages) {
+	public static List<String> fromComponent(final List<Component> messages) {
 		return messages.stream().map(miniMessage()::serialize).toList();
 	}
 	
