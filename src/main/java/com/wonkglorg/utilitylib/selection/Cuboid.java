@@ -1,6 +1,11 @@
 package com.wonkglorg.utilitylib.selection;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.util.BlockIterator;
@@ -8,7 +13,12 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSerializable, Serializable{
@@ -19,6 +29,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	private final String worldName;
 	private final int x1, y1, z1;
 	private final int x2, y2, z2;
+	private final int centerX, centerY, centerZ;
 	
 	/**
 	 * Construct a Cuboid given two Location objects which represent any two corners of the Cuboid. Note: The 2 locations must be on the same world.
@@ -37,6 +48,9 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		this.x2 = Math.max(l1.getBlockX(), l2.getBlockX()) + 1;
 		this.y2 = Math.max(l1.getBlockY(), l2.getBlockY()) + 1;
 		this.z2 = Math.max(l1.getBlockZ(), l2.getBlockZ()) + 1;
+		this.centerX = (this.x1 + this.x2) / 2;
+		this.centerY = (this.y1 + this.y2) / 2;
+		this.centerZ = (this.z1 + this.z2) / 2;
 	}
 	
 	/**
@@ -76,6 +90,9 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		this.y2 = Math.max(y1, y2);
 		this.z1 = Math.min(z1, z2);
 		this.z2 = Math.max(z1, z2);
+		this.centerX = (this.x1 + this.x2) / 2;
+		this.centerY = (this.y1 + this.y2) / 2;
+		this.centerZ = (this.z1 + this.z2) / 2;
 	}
 	
 	/**
@@ -89,7 +106,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * @param y2 - Y co-ordinate of corner 2
 	 * @param z2 - Z co-ordinate of corner 2
 	 */
-	private Cuboid(String worldName, int x1, int y1, int z1, int x2, int y2, int z2) {
+	public Cuboid(String worldName, int x1, int y1, int z1, int x2, int y2, int z2) {
 		this.worldName = worldName;
 		this.x1 = Math.min(x1, x2);
 		this.x2 = Math.max(x1, x2);
@@ -97,6 +114,9 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		this.y2 = Math.max(y1, y2);
 		this.z1 = Math.min(z1, z2);
 		this.z2 = Math.max(z1, z2);
+		this.centerX = (this.x1 + this.x2) / 2;
+		this.centerY = (this.y1 + this.y2) / 2;
+		this.centerZ = (this.z1 + this.z2) / 2;
 	}
 	
 	/**
@@ -112,6 +132,9 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		this.y2 = (Integer) map.get("y2");
 		this.z1 = (Integer) map.get("z1");
 		this.z2 = (Integer) map.get("z2");
+		this.centerX = (this.x1 + this.x2) / 2;
+		this.centerY = (this.y1 + this.y2) / 2;
+		this.centerZ = (this.z1 + this.z2) / 2;
 	}
 	
 	@Override
@@ -578,6 +601,53 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	}
 	
 	/**
+	 * Calculates the squared distance between the given Location and the nearest face of the Cuboid.
+	 *
+	 * @param point - The Location to check
+	 * @return The squared distance to the nearest face of the Cuboid or null if the location is in a different world or otherwise invalid
+	 */
+	public Double getShortestSquaredDistanceToSurface(Location point) {
+		if(point.getWorld() != this.getWorld()){
+			return null;
+		}
+		
+		double px = point.getX(), py = point.getY(), pz = point.getZ();
+		
+		double dx = (px < x1) ? (x1 - px) : (px > x2) ? (px - x2) : 0;
+		double dy = (py < y1) ? (y1 - py) : (py > y2) ? (py - y2) : 0;
+		double dz = (pz < z1) ? (z1 - pz) : (pz > z2) ? (pz - z2) : 0;
+		
+		if(dx == 0 && dy == 0 && dz == 0){
+			return 0.0;
+		}
+		
+		return dx * dx + dy * dy + dz * dz;
+	}
+	
+	/**
+	 * Check if the given Location is within range of this Cuboid.
+	 *
+	 * @param point - The Location to check
+	 * @param range - The maximum distance to the Cuboid
+	 * @return true if the Location is within range of the Cuboid
+	 */
+	public boolean isPointInRange(Location point, double range) {
+		Double squaredDistance = getShortestSquaredDistanceToSurface(point);
+		return squaredDistance != null && squaredDistance <= range * range;
+	}
+	
+	/**
+	 * Calculates the actual Euclidean distance using the squared distance method.
+	 *
+	 * @param point - The Location to check
+	 * @return The true distance to the nearest face of the Cuboid or null if the location is invalid
+	 */
+	public Double getShortestDistanceToSurface(Location point) {
+		Double squaredDistance = getShortestSquaredDistanceToSurface(point);
+		return (squaredDistance != null) ? Math.sqrt(squaredDistance) : null;
+	}
+	
+	/**
 	 * Get the Cuboid big enough to hold both this Cuboid and the given one.
 	 *
 	 * @param other - The other cuboid.
@@ -722,16 +792,18 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		
 		for(int x = lowerX; x <= upperX; x++){
 			world.spawnParticle(particle, x, lowerY, lowerZ, 0, 0, 0, 0, 0, null, true);
-			world.spawnParticle(particle, x, upperY, lowerZ, 0, 0, 0, 0, 0, null, true);
 			world.spawnParticle(particle, x, lowerY, upperZ, 0, 0, 0, 0, 0, null, true);
+			world.spawnParticle(particle, x, upperY, lowerZ, 0, 0, 0, 0, 0, null, true);
 			world.spawnParticle(particle, x, upperY, upperZ, 0, 0, 0, 0, 0, null, true);
 		}
+		
 		for(int y = lowerY; y <= upperY; y++){
 			world.spawnParticle(particle, lowerX, y, lowerZ, 0, 0, 0, 0, 0, null, true);
-			world.spawnParticle(particle, upperX, y, lowerZ, 0, 0, 0, 0, 0, null, true);
 			world.spawnParticle(particle, lowerX, y, upperZ, 0, 0, 0, 0, 0, null, true);
+			world.spawnParticle(particle, upperX, y, lowerZ, 0, 0, 0, 0, 0, null, true);
 			world.spawnParticle(particle, upperX, y, upperZ, 0, 0, 0, 0, 0, null, true);
 		}
+		
 		for(int z = lowerZ; z <= upperZ; z++){
 			world.spawnParticle(particle, lowerX, lowerY, z, 0, 0, 0, 0, 0, null, true);
 			world.spawnParticle(particle, upperX, lowerY, z, 0, 0, 0, 0, 0, null, true);
@@ -784,4 +856,15 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		
 	}
 	
+	public int getCenterX() {
+		return centerX;
+	}
+	
+	public int getCenterY() {
+		return centerY;
+	}
+	
+	public int getCenterZ() {
+		return centerZ;
+	}
 }
