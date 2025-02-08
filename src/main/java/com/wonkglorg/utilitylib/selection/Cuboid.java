@@ -27,54 +27,23 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * This class is a region/cuboid from one location to another. It can be used for blocks protection and things like WorldEdit.
 	 */
 	private final String worldName;
-	private final int x1, y1, z1;
-	private final int x2, y2, z2;
-	private final int centerX, centerY, centerZ;
-	
 	/**
-	 * Construct a Cuboid given two Location objects which represent any two corners of the Cuboid. Note: The 2 locations must be on the same world.
-	 *
-	 * @param l1 - One of the corners
-	 * @param l2 - The other corner
+	 * The first point of the Cuboid
 	 */
-	public Cuboid(Location l1, Location l2) {
-		if(!l1.getWorld().equals(l2.getWorld())){
-			throw new IllegalArgumentException("Locations must be on the same world");
-		}
-		this.worldName = l1.getWorld().getName();
-		this.x1 = Math.min(l1.getBlockX(), l2.getBlockX());
-		this.y1 = Math.min(l1.getBlockY(), l2.getBlockY());
-		this.z1 = Math.min(l1.getBlockZ(), l2.getBlockZ());
-		this.x2 = Math.max(l1.getBlockX(), l2.getBlockX()) + 1;
-		this.y2 = Math.max(l1.getBlockY(), l2.getBlockY()) + 1;
-		this.z2 = Math.max(l1.getBlockZ(), l2.getBlockZ()) + 1;
-		this.centerX = (this.x1 + this.x2) / 2;
-		this.centerY = (this.y1 + this.y2) / 2;
-		this.centerZ = (this.z1 + this.z2) / 2;
-	}
-	
+	private final double x1, y1, z1;
 	/**
-	 * Construct a one-block Cuboid at the given Location of the Cuboid.
-	 *
-	 * @param l1 location of the Cuboid
+	 * The second point of the Cuboid
 	 */
-	public Cuboid(Location l1) {
-		this(l1, l1);
-	}
-	
+	private final double x2, y2, z2;
 	/**
-	 * Copy constructor.
-	 *
-	 * @param other - The Cuboid to copy
+	 * The center of the cuboid.
 	 */
-	public Cuboid(Cuboid other) {
-		this(other.worldName, other.x1, other.y1, other.z1, other.x2, other.y2, other.z2);
-	}
+	private final double centerX, centerY, centerZ;
 	
 	/**
-	 * Construct a Cuboid in the given World and xyz co-ordinates
+	 * Construct a Cuboid in the given world name and xyz co-ordinates.
 	 *
-	 * @param world - The Cuboid's world
+	 * @param worldName - The Cuboid's world name
 	 * @param x1 - X co-ordinate of corner 1
 	 * @param y1 - Y co-ordinate of corner 1
 	 * @param z1 - Z co-ordinate of corner 1
@@ -82,8 +51,8 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * @param y2 - Y co-ordinate of corner 2
 	 * @param z2 - Z co-ordinate of corner 2
 	 */
-	public Cuboid(World world, int x1, int y1, int z1, int x2, int y2, int z2) {
-		this.worldName = world.getName();
+	private Cuboid(String worldName, double x1, double y1, double z1, double x2, double y2, double z2) {
+		this.worldName = worldName;
 		this.x1 = Math.min(x1, x2);
 		this.x2 = Math.max(x1, x2);
 		this.y1 = Math.min(y1, y2);
@@ -106,17 +75,63 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * @param y2 - Y co-ordinate of corner 2
 	 * @param z2 - Z co-ordinate of corner 2
 	 */
-	public Cuboid(String worldName, int x1, int y1, int z1, int x2, int y2, int z2) {
-		this.worldName = worldName;
-		this.x1 = Math.min(x1, x2);
-		this.x2 = Math.max(x1, x2);
-		this.y1 = Math.min(y1, y2);
-		this.y2 = Math.max(y1, y2);
-		this.z1 = Math.min(z1, z2);
-		this.z2 = Math.max(z1, z2);
-		this.centerX = (this.x1 + this.x2) / 2;
-		this.centerY = (this.y1 + this.y2) / 2;
-		this.centerZ = (this.z1 + this.z2) / 2;
+	public static Cuboid create(String worldName, double x1, double y1, double z1, double x2, double y2, double z2) {
+		return new Cuboid(worldName, x1, y1, z1, x2, y2, z2);
+	}
+	
+	/**
+	 * Construct a Cuboid in the given World and xyz co-ordinates
+	 *
+	 * @param world - The Cuboid's world
+	 * @param x1 - X co-ordinate of corner 1
+	 * @param y1 - Y co-ordinate of corner 1
+	 * @param z1 - Z co-ordinate of corner 1
+	 * @param x2 - X co-ordinate of corner 2
+	 * @param y2 - Y co-ordinate of corner 2
+	 * @param z2 - Z co-ordinate of corner 2
+	 */
+	public static Cuboid create(World world, double x1, double y1, double z1, double x2, double y2, double z2) {
+		return new Cuboid(world.getName(), x1, y1, z1, x2, y2, z2);
+	}
+	
+	/**
+	 * Construct a Cuboid given two Location objects which represent any two corners of the Cuboid. Note: The 2 locations must be on the same world.
+	 *
+	 * @param l1 - One of the corners
+	 * @param l2 - The other corner
+	 */
+	public static Cuboid create(Location l1, Location l2) {
+		if(l1 == null || l2 == null){
+			throw new IllegalArgumentException("Locations must not be null");
+		}
+		
+		if(!l1.getWorld().equals(l2.getWorld())){
+			throw new IllegalArgumentException("Locations must be on the same world");
+		}
+		
+		return new Cuboid(l1.getWorld().getName(), l1.getBlockX(), l1.getBlockY(), l1.getBlockZ(), l2.getBlockX(), l2.getBlockY(), l2.getBlockZ());
+	}
+	
+	/**
+	 * Construct a one-block Cuboid at the given Location of the Cuboid.
+	 *
+	 * @param l1 location of the Cuboid
+	 */
+	public static Cuboid create(Location l1) {
+		return create(l1, l1);
+	}
+	
+	/**
+	 * Copy constructor.
+	 *
+	 * @param other - The Cuboid to copy
+	 */
+	public static Cuboid create(Cuboid other) {
+		if(other == null){
+			throw new IllegalArgumentException("Cuboid must not be null");
+		}
+		
+		return new Cuboid(other.worldName, other.x1, other.y1, other.z1, other.x2, other.y2, other.z2);
 	}
 	
 	/**
@@ -124,17 +139,16 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @param map - The map of keys.
 	 */
-	public Cuboid(Map<String, Object> map) {
-		this.worldName = (String) map.get("worldName");
-		this.x1 = (Integer) map.get("x1");
-		this.x2 = (Integer) map.get("x2");
-		this.y1 = (Integer) map.get("y1");
-		this.y2 = (Integer) map.get("y2");
-		this.z1 = (Integer) map.get("z1");
-		this.z2 = (Integer) map.get("z2");
-		this.centerX = (this.x1 + this.x2) / 2;
-		this.centerY = (this.y1 + this.y2) / 2;
-		this.centerZ = (this.z1 + this.z2) / 2;
+	public static Cuboid create(Map<String, Object> map) {
+		String worldName = (String) map.get("worldName");
+		double x1 = (Integer) map.get("x1");
+		double x2 = (Integer) map.get("x2");
+		double y1 = (Integer) map.get("y1");
+		double y2 = (Integer) map.get("y2");
+		double z1 = (Integer) map.get("z1");
+		double z2 = (Integer) map.get("z2");
+		
+		return new Cuboid(worldName, (int) x1, (int) y1, (int) z1, (int) x2, (int) y2, (int) z2);
 	}
 	
 	@Override
@@ -185,9 +199,9 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * @return Location at the centre of the Cuboid
 	 */
 	public Location getCenter() {
-		int x1 = this.getUpperX() + 1;
-		int y1 = this.getUpperY() + 1;
-		int z1 = this.getUpperZ() + 1;
+		double x1 = this.getUpperX() - 0.0;
+		double y1 = this.getUpperY() + 1;
+		double z1 = this.getUpperZ() - 0.5;
 		return new Location(this.getWorld(),
 				this.getLowerX() + (x1 - this.getLowerX()) / 2.0,
 				this.getLowerY() + (y1 - this.getLowerY()) / 2.0,
@@ -213,7 +227,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return Size of Cuboid along the X axis
 	 */
-	public int getSizeX() {
+	public double getSizeX() {
 		return (this.x2 - this.x1) + 1;
 	}
 	
@@ -222,7 +236,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return Size of Cuboid along the Y axis
 	 */
-	public int getSizeY() {
+	public double getSizeY() {
 		return (this.y2 - this.y1) + 1;
 	}
 	
@@ -231,7 +245,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return Size of Cuboid along the Z axis
 	 */
-	public int getSizeZ() {
+	public double getSizeZ() {
 		return (this.z2 - this.z1) + 1;
 	}
 	
@@ -240,7 +254,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return the minimum X co-ordinate
 	 */
-	public int getLowerX() {
+	public double getLowerX() {
 		return this.x1;
 	}
 	
@@ -249,7 +263,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return the minimum Y co-ordinate
 	 */
-	public int getLowerY() {
+	public double getLowerY() {
 		return this.y1;
 	}
 	
@@ -258,7 +272,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return the minimum Z co-ordinate
 	 */
-	public int getLowerZ() {
+	public double getLowerZ() {
 		return this.z1;
 	}
 	
@@ -267,7 +281,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return the maximum X co-ordinate
 	 */
-	public int getUpperX() {
+	public double getUpperX() {
 		return this.x2;
 	}
 	
@@ -276,7 +290,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return the maximum Y co-ordinate
 	 */
-	public int getUpperY() {
+	public double getUpperY() {
 		return this.y2;
 	}
 	
@@ -285,7 +299,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return the maximum Z co-ordinate
 	 */
-	public int getUpperZ() {
+	public double getUpperZ() {
 		return this.z2;
 	}
 	
@@ -297,14 +311,14 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	public Block[] corners() {
 		Block[] res = new Block[8];
 		World w = this.getWorld();
-		res[0] = w.getBlockAt(this.x1, this.y1, this.z1);
-		res[1] = w.getBlockAt(this.x1, this.y1, this.z2);
-		res[2] = w.getBlockAt(this.x1, this.y2, this.z1);
-		res[3] = w.getBlockAt(this.x1, this.y2, this.z2);
-		res[4] = w.getBlockAt(this.x2, this.y1, this.z1);
-		res[5] = w.getBlockAt(this.x2, this.y1, this.z2);
-		res[6] = w.getBlockAt(this.x2, this.y2, this.z1);
-		res[7] = w.getBlockAt(this.x2, this.y2, this.z2);
+		res[0] = w.getBlockAt((int) this.x1, (int) this.y1, (int) this.z1);
+		res[1] = w.getBlockAt((int) this.x1, (int) this.y1, (int) this.z2);
+		res[2] = w.getBlockAt((int) this.x1, (int) this.y2, (int) this.z1);
+		res[3] = w.getBlockAt((int) this.x1, (int) this.y2, (int) this.z2);
+		res[4] = w.getBlockAt((int) this.x2, (int) this.y1, (int) this.z1);
+		res[5] = w.getBlockAt((int) this.x2, (int) this.y1, (int) this.z2);
+		res[6] = w.getBlockAt((int) this.x2, (int) this.y2, (int) this.z1);
+		res[7] = w.getBlockAt((int) this.x2, (int) this.y2, (int) this.z2);
 		return res;
 	}
 	
@@ -480,7 +494,7 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 *
 	 * @return The Cuboid volume, in blocks
 	 */
-	public int getVolume() {
+	public double getVolume() {
 		return this.getSizeX() * this.getSizeY() * this.getSizeZ();
 	}
 	
@@ -658,12 +672,12 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 			return this;
 		}
 		
-		int xMin = Math.min(this.getLowerX(), other.getLowerX());
-		int yMin = Math.min(this.getLowerY(), other.getLowerY());
-		int zMin = Math.min(this.getLowerZ(), other.getLowerZ());
-		int xMax = Math.max(this.getUpperX(), other.getUpperX());
-		int yMax = Math.max(this.getUpperY(), other.getUpperY());
-		int zMax = Math.max(this.getUpperZ(), other.getUpperZ());
+		double xMin = Math.min(this.getLowerX(), other.getLowerX());
+		double yMin = Math.min(this.getLowerY(), other.getLowerY());
+		double zMin = Math.min(this.getLowerZ(), other.getLowerZ());
+		double xMax = Math.max(this.getUpperX(), other.getUpperX());
+		double yMax = Math.max(this.getUpperY(), other.getUpperY());
+		double zMax = Math.max(this.getUpperZ(), other.getUpperZ());
 		
 		return new Cuboid(this.worldName, xMin, yMin, zMin, xMax, yMax, zMax);
 	}
@@ -676,8 +690,8 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * @param z - The Z co-ordinate
 	 * @return The block at the given position
 	 */
-	public Block getRelativeBlock(int x, int y, int z) {
-		return this.getWorld().getBlockAt(this.x1 + x, this.y1 + y, this.z1 + z);
+	public Block getRelativeBlock(double x, double y, double z) {
+		return this.getWorld().getBlockAt((int) (this.x1 + x), (int) (this.y1 + y), (int) (this.z1 + z));
 	}
 	
 	/**
@@ -690,8 +704,8 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 * @param z - The Z co-ordinate
 	 * @return The block at the given position
 	 */
-	public Block getRelativeBlock(World w, int x, int y, int z) {
-		return w.getBlockAt(this.x1 + x, y1 + y, this.z1 + z);
+	public Block getRelativeBlock(World w, double x, double y, double z) {
+		return w.getBlockAt((int) (this.x1 + x), (int) (y1 + y), (int) (this.z1 + z));
 	}
 	
 	/**
@@ -703,10 +717,10 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		List<Chunk> res = new ArrayList<>();
 		
 		World w = this.getWorld();
-		int x1 = this.getLowerX() & ~0xf;
-		int x2 = this.getUpperX() & ~0xf;
-		int z1 = this.getLowerZ() & ~0xf;
-		int z2 = this.getUpperZ() & ~0xf;
+		int x1 = ((int) this.getLowerX()) & ~0xf;
+		int x2 = ((int) this.getUpperX()) & ~0xf;
+		int z1 = ((int) this.getLowerZ()) & ~0xf;
+		int z2 = ((int) this.getUpperZ()) & ~0xf;
 		for(int x = x1; x <= x2; x += 16){
 			for(int z = z1; z <= z2; z += 16){
 				res.add(w.getChunkAt(x >> 4, z >> 4));
@@ -716,23 +730,39 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	}
 	
 	public @NotNull Iterator<Block> iterator() {
-		return new CuboidIterator(this.getWorld(), this.x1, this.y1, this.z1, this.x2, this.y2, this.z2);
+		return new CuboidIterator(this.getWorld(), (int) this.x1, (int) this.y1, (int) this.z1, (int) this.x2, (int) this.y2, (int) this.z2);
 	}
 	
 	@Override
 	public Cuboid clone() {
-		Cuboid clone;
-		try{
-			clone = (Cuboid) super.clone();
-		} catch(CloneNotSupportedException e){
-			clone = new Cuboid(this);
-		}
-		return clone;
+		return new Cuboid(this.worldName, this.x1, this.y1, this.z1, this.x2, this.y2, this.z2);
 	}
 	
 	@Override
 	public String toString() {
-		return "Cuboid: " + this.worldName + "," + this.x1 + "," + this.y1 + "," + this.z1 + "=>" + this.x2 + "," + this.y2 + "," + this.z2;
+		return "Cuboid{" +
+			   "worldName='" +
+			   worldName +
+			   '\'' +
+			   ", x1=" +
+			   x1 +
+			   ", y1=" +
+			   y1 +
+			   ", z1=" +
+			   z1 +
+			   ", x2=" +
+			   x2 +
+			   ", y2=" +
+			   y2 +
+			   ", z2=" +
+			   z2 +
+			   ", centerX=" +
+			   centerX +
+			   ", centerY=" +
+			   centerY +
+			   ", centerZ=" +
+			   centerZ +
+			   '}';
 	}
 	
 	public static class CuboidIterator implements Iterator<Block>{
@@ -783,12 +813,12 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 	 */
 	public void outline(Particle particle) {
 		World world = getWorld();
-		int lowerX = getLowerX();
-		int upperX = getUpperX();
-		int lowerY = getLowerY();
-		int upperY = getUpperY();
-		int lowerZ = getLowerZ();
-		int upperZ = getUpperZ();
+		int lowerX = (int) getLowerX();
+		int upperX = (int) getUpperX();
+		int lowerY = (int) getLowerY();
+		int upperY = (int) getUpperY();
+		int lowerZ = (int) getLowerZ();
+		int upperZ = (int) getUpperZ();
 		
 		for(int x = lowerX; x <= upperX; x++){
 			world.spawnParticle(particle, x, lowerY, lowerZ, 0, 0, 0, 0, 0, null, true);
@@ -856,15 +886,17 @@ public final class Cuboid implements Iterable<Block>, Cloneable, ConfigurationSe
 		
 	}
 	
-	public int getCenterX() {
+	public double getCenterX() {
 		return centerX;
 	}
 	
-	public int getCenterY() {
+	public double getCenterY() {
 		return centerY;
 	}
 	
-	public int getCenterZ() {
+	public double getCenterZ() {
 		return centerZ;
 	}
+	
+	
 }
